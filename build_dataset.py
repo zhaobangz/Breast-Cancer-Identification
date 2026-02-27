@@ -1,39 +1,28 @@
+"""Build dataset splits using the centralized data pipeline.
+
+This script uses `cancernet.data_pipeline` to discover, validate,
+and stratify-split an image dataset and then copies files into
+`config.TRAIN_PATH`, `config.VAL_PATH`, and `config.TEST_PATH`.
+
+Run:
+        python build_dataset.py
+
+No external keys or network access required.
+"""
+
 from cancernet import config
-from imutils import paths
-import random, shutil, os
+from cancernet.data_pipeline import create_splits
+import logging
 
-originalPaths=list(paths.list_images(config.INPUT_DATASET))
-random.seed(7)
-random.shuffle(originalPaths)
+logging.basicConfig(level=logging.INFO)
 
-index=int(len(originalPaths)*config.TRAIN_SPLIT)
-trainPaths=originalPaths[:index]
-testPaths=originalPaths[index:]
-
-index=int(len(trainPaths)*config.VAL_SPLIT)
-valPaths=trainPaths[:index]
-trainPaths=trainPaths[index:]
-
-datasets=[("training", trainPaths, config.TRAIN_PATH),
-          ("validation", valPaths, config.VAL_PATH),
-          ("testing", testPaths, config.TEST_PATH)
-]
-
-for (setType, originalPaths, basePath) in datasets:
-        print(f'Building {setType} set')
-
-        if not os.path.exists(basePath):
-                print(f'Building directory {basePath}')
-                os.makedirs(basePath)
-
-        for path in originalPaths:
-                file=path.split(os.path.sep)[-1]
-                label=file[-5:-4]
-
-                labelPath=os.path.sep.join([basePath,label])
-                if not os.path.exists(labelPath):
-                        print(f'Building directory {labelPath}')
-                        os.makedirs(labelPath)
-
-                newPath=os.path.sep.join([labelPath, file])
-                shutil.copy2(path, newPath)
+if __name__ == "__main__":
+        logging.info("Starting dataset build using cancernet.data_pipeline")
+        create_splits(
+                input_dir=config.INPUT_DATASET,
+                output_base=config.BASE_PATH,
+                train_split=config.TRAIN_SPLIT,
+                val_split=config.VAL_SPLIT,
+                seed=7,
+        )
+        logging.info("Dataset build finished. Check %s", config.BASE_PATH)

@@ -1,5 +1,4 @@
 tensorflow==2.20.0
-keras>=3.10.0
 numpy>=1.21
 pandas
 scikit-learn
@@ -9,3 +8,4 @@ opencv-python-headless
 Pillow
 h5py
 tqdm
+gradio>=3.0

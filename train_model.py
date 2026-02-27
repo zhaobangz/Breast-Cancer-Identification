@@ -1,10 +1,10 @@
 import matplotlib
 matplotlib.use("Agg")
 
-from keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import LearningRateScheduler
-from keras.optimizers import Adagrad
-from keras.utils import np_utils
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import LearningRateScheduler
+from tensorflow.keras.optimizers import Adagrad
+from tensorflow.keras.utils import to_categorical
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from cancernet.cancernet import CancerNet
@@ -22,7 +22,7 @@ lenVal=len(list(paths.list_images(config.VAL_PATH)))
 lenTest=len(list(paths.list_images(config.TEST_PATH)))
 
 trainLabels=[int(p.split(os.path.sep)[-2]) for p in trainPaths]
-trainLabels=np_utils.to_categorical(trainLabels)
+trainLabels=to_categorical(trainLabels)
 classTotals=trainLabels.sum(axis=0)
 classWeight=classTotals.max()/classTotals
 
@@ -62,11 +62,11 @@ testGen = valAug.flow_from_directory(
 	batch_size=BS)
 
 model=CancerNet.build(width=48,height=48,depth=3,classes=2)
-opt=Adagrad(lr=INIT_LR,decay=INIT_LR/NUM_EPOCHS)
+opt=Adagrad(learning_rate=INIT_LR)
 model.compile(loss="binary_crossentropy",optimizer=opt,metrics=["accuracy"])
 
 
-M=model.fit_generator(
+M=model.fit(
 	trainGen,
 	steps_per_epoch=lenTrain//BS,
 	validation_data=valGen,
@@ -76,7 +76,7 @@ M=model.fit_generator(
 
 print("Now evaluating the model")
 testGen.reset()
-pred_indices=model.predict_generator(testGen,steps=(lenTest//BS)+1)
+pred_indices=model.predict(testGen,steps=(lenTest//BS)+1)
 
 pred_indices=np.argmax(pred_indices,axis=1)
 
