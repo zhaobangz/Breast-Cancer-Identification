@@ -1,4 +1,4 @@
-# Breast Cancer Classification
+# Breast Imaging Cancer Identification 
 
 This repository contains a reproducible pipeline for training an image-based
 breast cancer classifier (local-only, no external API keys required).
